@@ -695,6 +695,8 @@ _make_bootmode_uefi-x64.grub.esp() {
                       -o "${work_dir}/BOOTx64.EFI" "boot/grub/grub.cfg=${work_dir}/grub-embed.cfg"
     # Add GRUB to the list of files used to calculate the required FAT image size.
     efiboot_files+=("${work_dir}/BOOTx64.EFI"
+                    "${pacstrap_dir}/usr/share/shim-signed/shimx64.efi"
+                    "${pacstrap_dir}/usr/share/shim-signed/mmx64.efi"
                     "${pacstrap_dir}/usr/share/edk2-shell/x64/Shell_Full.efi")
 
     efiboot_imgsize="$(du -bcs -- "${efiboot_files[@]}" 2>/dev/null | awk 'END { print $1 }')"
@@ -703,7 +705,13 @@ _make_bootmode_uefi-x64.grub.esp() {
     _make_efibootimg "$efiboot_imgsize"
 
     # Copy GRUB EFI binary to the default/fallback boot path
-    mcopy -i "${efibootimg}" "${work_dir}/BOOTx64.EFI" ::/EFI/BOOT/BOOTx64.EFI
+    mcopy -i "${efibootimg}" \
+        "${pacstrap_dir}/usr/share/shim-signed/shimx64.efi" ::/EFI/BOOT/BOOTx64.EFI
+
+    mcopy -i "${efibootimg}" \
+        "${pacstrap_dir}/usr/share/shim-signed/mmx64.efi" ::/EFI/BOOT/mmx64.EFI
+
+    mcopy -i "${efibootimg}" "${work_dir}/BOOTx64.EFI" ::/EFI/BOOT/GRUBx64.EFI
 
     # Copy GRUB files
     _run_once _make_common_bootmode_grub_copy_to_efibootimg
@@ -731,7 +739,9 @@ _make_bootmode_uefi-x64.grub.eltorito() {
     install -d -m 0755 -- "${isofs_dir}/EFI/BOOT"
 
     # Copy GRUB EFI binary to the default/fallback boot path
-    install -m 0644 -- "${work_dir}/BOOTx64.EFI" "${isofs_dir}/EFI/BOOT/BOOTx64.EFI"
+    install -m 0644 -- "${work_dir}/BOOTx64.EFI" "${isofs_dir}/EFI/BOOT/GRUBx64.EFI"
+    install -m 0644 -- "${pacstrap_dir}/usr/share/shim-signed/shimx64.efi" "${isofs_dir}/EFI/BOOT/BOOTx64.EFI"
+    install -m 0644 -- "${pacstrap_dir}/usr/share/shim-signed/mmx64.efi"  "${isofs_dir}/EFI/BOOT/mmx64.EFI"
 
     # Copy GRUB files
     _run_once _make_common_bootmode_grub_copy_to_isofs
@@ -816,7 +826,9 @@ _make_bootmode_uefi-x64.systemd-boot.eltorito() {
 
     # Copy systemd-boot EFI binary to the default/fallback boot path
     install -m 0644 -- "${pacstrap_dir}/usr/lib/systemd/boot/efi/systemd-bootx64.efi" \
-        "${isofs_dir}/EFI/BOOT/BOOTx64.EFI"
+        "${isofs_dir}/EFI/BOOT/GRUBx64.EFI"
+    install -m 0644 -- "${pacstrap_dir}/usr/share/shim-signed/shimx64.efi" "${isofs_dir}/EFI/BOOT/BOOTx64.EFI"
+    install -m 0644 -- "${pacstrap_dir}/usr/share/shim-signed/mmx64.efi"  "${isofs_dir}/EFI/BOOT/mmx64.EFI"
 
     # Copy systemd-boot configuration files
     install -d -m 0755 -- "${isofs_dir}/loader/entries"
