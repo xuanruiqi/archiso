@@ -759,6 +759,8 @@ _make_bootmode_uefi-x64.systemd-boot.esp() {
     efiboot_files+=("${pacstrap_dir}/usr/lib/systemd/boot/efi/systemd-bootx64.efi"
                     "${pacstrap_dir}/usr/share/edk2-shell/x64/Shell_Full.efi"
                     "${profile}/efiboot/"
+                    "${profile}/usr/share/shim-signed/shimx64.efi"
+                    "${profile}/usr/share/shim-signed/mmx64.efi"
                     "${pacstrap_dir}/boot/vmlinuz-"*
                     "${pacstrap_dir}/boot/initramfs-"*".img"
                     "${_available_ucodes[@]}")
@@ -769,7 +771,13 @@ _make_bootmode_uefi-x64.systemd-boot.esp() {
 
     # Copy systemd-boot EFI binary to the default/fallback boot path
     mcopy -i "${efibootimg}" \
-        "${pacstrap_dir}/usr/lib/systemd/boot/efi/systemd-bootx64.efi" ::/EFI/BOOT/BOOTx64.EFI
+        "${pacstrap_dir}/usr/share/shim-signed/shimx64.efi" ::/EFI/BOOT/BOOTx64.EFI
+
+    mcopy -i "${efibootimg}" \
+        "${pacstrap_dir}/usr/share/shim-signed/mmx64.efi" ::/EFI/BOOT/mmx64.EFI
+
+    mcopy -i "${efibootimg}" \
+        "${pacstrap_dir}/usr/lib/systemd/boot/efi/systemd-bootx64.efi" ::/EFI/BOOT/GRUBx64.EFI
 
     # Copy systemd-boot configuration files
     mmd -i "${efibootimg}" ::/loader ::/loader/entries
